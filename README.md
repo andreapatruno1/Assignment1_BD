@@ -30,8 +30,8 @@ The report is `Assignment01_Patruno_Report.pdf`. Repository: https://github.com/
 ## Requirements
 
 - Linux (the memory metric reads `VmHWM` from `/proc/self/status`)
-- GCC (tested: 11.4.0), JDK 11 or newer (`javac`, `java`; tested runtime: OpenJDK 11.0.32)
-- Python 3.10+ (tested: CPython 3.10.12) with the packages in `requirements.txt`
+- GCC (tested: 15.2.0), JDK 11 or newer (`javac`, `java`; tested: OpenJDK 21.0.12)
+- Python 3.10+ (tested: CPython 3.14.4) with the packages in `requirements.txt`
   (NumPy is used only to generate inputs and as correctness reference, never inside the timed code)
 
 ```bash
@@ -53,7 +53,7 @@ python3 scripts/verify.py
 # 4. environment -> results/environment.txt
 bash scripts/env_info.sh
 
-# 5. benchmarks -> results/raw_times.csv and results/limits.csv (about 15 minutes)
+# 5. benchmarks -> results/raw_times.csv and results/limits.csv (about 5 minutes)
 python3 scripts/run_benchmarks.py
 #    or one configuration at a time:
 python3 scripts/run_benchmarks.py --lang c --n 1024

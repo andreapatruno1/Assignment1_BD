@@ -2,7 +2,7 @@
 
 <p class="meta">Big Data · Grado en Ciencia e Ingeniería de Datos · ULPGC 2026-2027 · Individual Assignment 1 · Andrea Patruno · October 2026</p>
 
-**Abstract.** We compare the same triple-loop matrix multiplication (i-j-k order, float64, flat row-major arrays) in Python, Java and C, on the same shared inputs and the same machine, for n = 64 … 2048. For each configuration we take 5 timed repetitions of the kernel only and report median and interquartile range, together with the peak resident memory of the process. All three implementations produce bitwise identical results. C and Java finish n = 1024 in about 5–6 s, pure Python reaches only n = 512 (18.8 s) inside the 20 s budget. Runtime grows about as n³ only while the matrices fit in cache: at n = 512 the time jumps ×34 (C) instead of ×8 because the column-wise access to B causes cache misses. Python is 44–250× slower than C, Java is 2.6× slower at n = 64 but equal from n = 512. The conclusions hold only for these implementations, settings and this machine.
+**Abstract.** We compare the same triple-loop matrix multiplication (i-j-k order, float64, flat row-major arrays) in Python, Java and C, on the same shared inputs and the same machine, for n = 64 … 2048. For each configuration we take 5 timed repetitions of the kernel only and report median and interquartile range, together with the peak resident memory of the process. All three implementations produce bitwise identical results. C and Java finish n = 1024 (8.5 s and 4.0 s), pure Python reaches only n = 512 (14.8 s) inside the 20 s budget. Runtime grows about as n³ only while the matrices fit in cache: from n = 256 to 512 the time grows ×34 (C) instead of ×8 because the column-wise access to B causes cache misses. Python is 50–140× slower than C; Java is 2.4× slower than C at n = 64, close at n = 256–512, and 2.2× faster at n = 1024. The conclusions hold only for these implementations, settings and this machine.
 
 ## 1. Introduction and objective
 
@@ -43,7 +43,7 @@ for i in 0..n-1:  for j in 0..n-1:  s = 0;  for k in 0..n-1:  s += A[i*n+k] * B[
 |---|---|---|---|
 | Storage | flat `list` of Python floats | flat `double[]` | flat `double*` (malloc) |
 | Numeric type | float64 (boxed objects) | double (primitive) | double |
-| Execution | CPython 3.10.12 interpreter | OpenJDK 11.0.32, JIT (C2), `-Xmx2g` | GCC 11.4.0 `-O2 -std=c11` |
+| Execution | CPython 3.14.4 interpreter | OpenJDK 21.0.12, JIT (C2), `-Xmx2g` | GCC 15.2.0 `-O2 -std=c11` |
 | Timer | `time.perf_counter_ns` [6] | `System.nanoTime` [7] | `clock_gettime(CLOCK_MONOTONIC)` |
 
 No library call replaces the loops. Unavoidable differences: Python stores pointers to float objects (≈ 32 bytes per element instead of 8) and checks types at every operation; Java checks array bounds; C uses `-O2` without `-ffast-math`, so the compiler cannot reorder the floating-point sum [8] and all three perform exactly the same additions in the same order.
@@ -56,9 +56,9 @@ No library call replaces the loops. Unavoidable differences: Python stores point
 
 | Item | Value |
 |---|---|
-| Machine | MSI laptop, Intel Core i7-1255U (host: 10 cores / 12 threads), Windows host |
-| Execution environment | Ubuntu 22.04.5 VM (kernel 6.8), **1 physical core / 2 logical processors** visible, 3.9 GB RAM |
-| Caches seen by the VM | L1d 48 KiB, L2 1.25 MiB, L3 12 MiB |
+| Machine | MSI laptop, Intel Core i7-1255U (10 cores: 2 performance + 8 efficiency, 12 threads), Windows host |
+| Execution environment | WSL2, Ubuntu 26.04.1 (kernel 6.6.87.2-microsoft-standard-WSL2), 6 cores / 12 logical processors visible, 10.7 GiB RAM |
+| Caches (per core, as reported in WSL2) | L1d 48 KiB, L2 1.25 MiB, L3 12 MiB (shared) |
 | Threads | all three programs are single-threaded; no numerical library is used in the timed code |
 
 ### 3.4 Correctness (before benchmarking)
@@ -79,7 +79,7 @@ No library call replaces the loops. Unavoidable differences: Python stores point
 
 ### 4.1 Correctness
 
-All tests passed for the three implementations. The known-answer, identity and zero cases match exactly (error 0). Against NumPy the maximum absolute error is 4.4·10⁻¹⁵ (n = 64, tolerance 9.1·10⁻¹³) and 7.1·10⁻¹⁵ (n = 100, tolerance 2.2·10⁻¹²). The outputs of Python, Java and C are **bitwise identical** in every test, and the benchmark checksums are identical across languages for every n.
+All tests passed for the three implementations. The known-answer, identity and zero cases match exactly (error 0). Against NumPy the maximum absolute error is 0 for both n = 64 (tolerance 9.1·10⁻¹³) and n = 100 (tolerance 2.2·10⁻¹²): on this machine the reference produced the same values. The outputs of Python, Java and C are **bitwise identical** in every test, and the benchmark checksums are identical across languages for every n.
 
 ### 4.2 Runtime
 
@@ -87,11 +87,11 @@ Table 1 — Time per multiplication (seconds), median of 5 repetitions with IQR.
 
 | n | C median | C IQR | Java median | Java IQR | Python median | Python IQR | Java / C | Python / C |
 |---|---|---|---|---|---|---|---|---|
-| 64 | 0.000097 | 0.000015 | 0.000256 | 0.000012 | 0.0246 | 0.0008 | 2.6 | 253 |
-| 128 | 0.00154 | 0.00003 | 0.00231 | 0.00020 | 0.199 | 0.006 | 1.5 | 129 |
-| 256 | 0.0126 | 0.0006 | 0.0183 | 0.0007 | 1.70 | 0.06 | 1.5 | 135 |
-| 512 | 0.425 | 0.063 | 0.435 | 0.001 | 18.81 | 0.19 | 1.0 | 44 |
-| 1024 | 5.88 | 0.55 | 5.24 | 0.62 | timeout | | 0.9 | — |
+| 64 | 0.0000704 | 0.0000037 | 0.000166 | 0.000010 | 0.00987 | 0.00049 | 2.4 | 140 |
+| 128 | 0.00102 | 0.00003 | 0.00159 | 0.00004 | 0.0805 | 0.0008 | 1.6 | 79 |
+| 256 | 0.00890 | 0.00011 | 0.0111 | 0.0009 | 0.821 | 0.143 | 1.3 | 92 |
+| 512 | 0.298 | 0.013 | 0.336 | 0.037 | 14.81 | 0.56 | 1.1 | 50 |
+| 1024 | 8.54 | 0.32 | 3.96 | 0.06 | timeout | | 0.46 | — |
 | 2048 | timeout | | timeout | | — | | | |
 
 <figure><img src="time.png"><figcaption>Figure 1 — Median time per multiplication vs n (log-log, error bars = IQR). The dotted line is n³ scaled from C at n = 64.</figcaption></figure>
@@ -100,13 +100,13 @@ Table 2 — Growth factor of the median when n doubles (n³ model: ×8).
 
 | n → 2n | 64→128 | 128→256 | 256→512 | 512→1024 |
 |---|---|---|---|---|
-| C | 15.9 | 8.2 | 33.8 | 13.8 |
-| Java | 9.0 | 7.9 | 23.7 | 12.1 |
-| Python | 8.1 | 8.5 | 11.1 | — |
+| C | 14.4 | 8.7 | 33.5 | 28.7 |
+| Java | 9.6 | 7.0 | 30.2 | 11.8 |
+| Python | 8.1 | 10.2 | 18.0 | — |
 
 <figure><img src="per_iter.png"><figcaption>Figure 2 — Median time divided by n³: cost of one inner-loop iteration (one multiply-add) in nanoseconds.</figcaption></figure>
 
-Variability is small: the IQR is below 5 % of the median in most configurations; it is larger for C at n = 64, 512 and 1024 (15 %, 15 %, 9 %) and Java at n = 1024 (12 %).
+Variability is small: the IQR is below 6 % of the median in most configurations; it is larger for Java at n = 256 and 512 (8 %, 11 %) and Python at n = 256 (17 %).
 
 ### 4.3 Memory and limits
 
@@ -114,11 +114,11 @@ Table 3 — Peak resident memory of the process (MiB) and estimated storage of A
 
 | n | C peak RSS | Java peak RSS | Python peak RSS | arrays C/Java (3·8n²) | arrays Python (≈3·32n²) |
 |---|---|---|---|---|---|
-| 64 | 1.7 | 40.1 | 10.1 | 0.09 | 0.4 |
-| 128 | 2.0 | 40.3 | 11.6 | 0.4 | 1.5 |
-| 256 | 3.1 | 42.5 | 17.2 | 1.5 | 6 |
-| 512 | 7.6 | 51.9 | 39.6 | 6 | 24 |
-| 1024 | 25.6 | 82.6 | — | 24 | — |
+| 64 | 1.9 | 44.1 | 11.1 | 0.09 | 0.4 |
+| 128 | 2.1 | 43.4 | 12.4 | 0.4 | 1.5 |
+| 256 | 3.3 | 45.5 | 18.2 | 1.5 | 6 |
+| 512 | 7.8 | 54.8 | 40.9 | 6 | 24 |
+| 1024 | 25.8 | 92.5 | — | 24 | — |
 
 <figure><img src="memory.png"><figcaption>Figure 3 — Peak resident memory vs n (log-log).</figcaption></figure>
 
@@ -126,15 +126,16 @@ Table 3 — Peak resident memory of the process (MiB) and estimated storage of A
 
 ## 5. Discussion
 
-**H1 — cubic growth: only partly confirmed.** Python grows almost exactly ×8 per doubling (8.1, 8.5) up to n = 256. C and Java grow ×8 only between 128 and 256; from 256 to 512 the time grows ×34 (C) and ×24 (Java). Figure 2 shows why: the cost of one multiply-add is constant only while the data stays in cache, then it rises from 0.37–0.75 ns (C, n ≤ 256) to 3.2 ns (n = 512) and 5.5 ns (n = 1024). At n = 512 one matrix is 2 MiB, larger than the L2 cache (1.25 MiB), and the inner loop jumps 4 KiB in B at every step: almost every access to B is a cache miss, and the power-of-two stride makes the lines compete for the same cache sets [2]. The first jump in C (×15.9 from 64 to 128) has the same cause on a smaller scale: at n = 64, B (32 KiB) fits in the 48 KiB L1, at n = 128 (128 KiB) it does not. The algorithm is O(n³), but the observed constant depends on the memory hierarchy. We did not measure cache misses with hardware counters, so this explanation is supported by the timing pattern and the cache sizes, not by direct cache measurements.
+**H1 — cubic growth: only partly confirmed.** The growth is close to ×8 only while the matrices are small: Python ×8.1 (64→128), C ×8.7 and Java ×7.0 (128→256). From 256 to 512 the time grows ×34 (C), ×30 (Java) and ×18 (Python), and from 512 to 1024 ×29 (C) and ×12 (Java). Figure 2 shows why: the cost of one multiply-add is constant only while the data stays in cache, then it rises (C: 0.27–0.53 ns for n ≤ 256, 2.2 ns at n = 512, 8.0 ns at n = 1024). At n = 512 one matrix is 2 MiB, larger than the L2 cache (1.25 MiB), and the inner loop jumps 4 KiB in B at every step: almost every access to B is a cache miss, and the power-of-two stride makes the lines compete for the same cache sets [2]. The first jump in C (×14.4 from 64 to 128) has the same cause on a smaller scale: at n = 64, B (32 KiB) fits in the 48 KiB L1, at n = 128 (128 KiB) it does not. The algorithm is O(n³), but the observed constant depends on the memory hierarchy. We did not measure cache misses with hardware counters, so this explanation is supported by the timing pattern and the cache sizes, not by direct cache measurements.
 
-**H2 — language ranking: confirmed only for small n.** For n ≤ 256 C is fastest, Java is 1.5–2.6× slower and Python 129–253× slower. In Python every inner iteration executes several bytecode instructions, two list lookups and the creation of new float objects (≈ 94–101 ns per iteration against < 1 ns in C). For n ≥ 512 the gap shrinks: Java equals C (0.435 s vs 0.425 s at n = 512; at n = 1024 Java's median is lower but the two IQRs overlap), and Python is "only" 44× slower. When the loop is limited by memory accesses, the quality of the generated code matters less. The extra cost of Java at n = 64 is plausibly due to array bounds checks and to short kernels where fixed overheads are more visible.
+**H2 — language ranking: confirmed only up to n = 512.** For n ≤ 512 C is fastest, Java is 1.1–2.4× slower and Python 50–140× slower. In Python every inner iteration executes several bytecode instructions, two list lookups and the creation of a new float object (≈ 38–49 ns per iteration for n ≤ 256 against < 1 ns in C). The gap between C and Java shrinks as n grows, because the loop becomes limited by memory accesses rather than by the generated instructions; the extra cost of Java at n = 64 is plausibly due to array bounds checks and to short kernels where fixed overheads are more visible. At n = 1024 Java is 2.2× faster than C (3.96 s vs 8.54 s, IQRs not overlapping). This result was not predicted and our data cannot explain it with certainty. Two plausible causes are: (a) the JIT generates a different inner loop than GCC `-O2` (for example with more unrolling, so more memory accesses are in flight when almost every access to B misses the cache); (b) the i7-1255U has performance and efficiency cores and no CPU affinity was set, so the C process may have run on a slower core. Separating them would require hardware counters and pinning the process to one core.
 
-**H3 — memory: confirmed.** C's peak memory is the arrays plus ≈ 1.6 MiB of process (25.6 MiB at n = 1024 for 24 MiB of arrays). Java has a fixed JVM cost of ≈ 40 MiB, and its peak also includes the temporary byte buffers used to read the files (82.6 MiB at n = 1024). Python starts at ≈ 10 MiB and grows about 4–5× faster per element than C, because each value is a float object (24 bytes) referenced by a list slot (8 bytes); at n = 512 it uses 39.6 MiB against 7.6 MiB for C.
+**H3 — memory: confirmed.** C's peak memory is the arrays plus ≈ 1.8 MiB of process (25.8 MiB at n = 1024 for 24 MiB of arrays). Java has a fixed JVM cost of ≈ 43 MiB, and its peak also includes the temporary byte buffers used to read the files (92.5 MiB at n = 1024). Python starts at ≈ 11 MiB and grows about 4–5× faster per element than C, because each value is a float object (24 bytes) referenced by a list slot (8 bytes); at n = 512 it uses 40.9 MiB against 7.8 MiB for C.
 
 **Limitations.**
 
-- One machine and one VM with a single physical core: the hypervisor and the Windows host can add noise (larger IQR in some C runs). The results do not describe other machines.
+- One machine, under WSL2 on a Windows host: background activity can add noise (largest IQR: Python 17 % at n = 256). The results do not describe other machines.
+- Hybrid CPU (performance and efficiency cores) and no CPU affinity: different runs may use different core types.
 - Peak RSS includes runtime and file-loading buffers; it is not the same quantity as array storage, so the two are reported separately.
 - Only 5 repetitions per configuration; the timeouts give a time limit, not a measured time.
 - The batching for n ≤ 128 means that those samples reuse warm caches.
@@ -142,7 +143,7 @@ Table 3 — Peak resident memory of the process (MiB) and estimated storage of A
 
 ## 6. Conclusions
 
-On this machine, with the same algorithm, inputs and arithmetic, the triple-loop multiplication grows as n³ only while the matrices fit in cache; beyond that, memory access dominates and the growth per doubling is much larger than 8. C and Java reach n = 1024 in about 5–6 s and become equivalent for large n; pure Python is 44–250× slower and reaches only n = 512 in the 20 s budget. Memory follows the 8n² (C, Java) or ≈ 32n² (Python) storage plus a fixed runtime cost. These results are limited to these implementations, compiler and runtime settings, and hardware; they do not show that one language is faster in general. The loop order that reads B by columns is the main bottleneck, which is the starting point for the optimisations of Assignment 2.
+On this machine, with the same algorithm, inputs and arithmetic, the triple-loop multiplication grows as n³ only while the matrices fit in cache; beyond that, memory access dominates and the growth per doubling is much larger than 8. C and Java reach n = 1024 (8.5 s and 4.0 s); C is fastest up to n = 512, while at n = 1024 Java is faster for reasons we could not isolate. Pure Python is 50–140× slower than C and reaches only n = 512 in the 20 s budget. Memory follows the 8n² (C, Java) or ≈ 32n² (Python) storage plus a fixed runtime cost. These results are limited to these implementations, compiler and runtime settings, and hardware; they do not show that one language is faster in general. The loop order that reads B by columns is the main bottleneck, which is the starting point for the optimisations of Assignment 2.
 
 ## 7. References and materials
 
@@ -156,9 +157,9 @@ On this machine, with the same algorithm, inputs and arithmetic, the triple-loop
 
 [5] Linux man-pages project, "proc(5) — Linux manual page." [Online]. Available: https://man7.org/linux/man-pages/man5/proc.5.html
 
-[6] Python Software Foundation, "time — Time access and conversions," Python 3.10 documentation. [Online]. Available: https://docs.python.org/3.10/library/time.html
+[6] Python Software Foundation, "time — Time access and conversions," Python 3.14 documentation. [Online]. Available: https://docs.python.org/3.14/library/time.html
 
-[7] Oracle, "System (Java SE 11 & JDK 11)," API documentation. [Online]. Available: https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/System.html
+[7] Oracle, "System (Java SE 21 & JDK 21)," API documentation. [Online]. Available: https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/System.html
 
 [8] Free Software Foundation, "Options that control optimization," GCC online documentation. [Online]. Available: https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
 

@@ -15,11 +15,11 @@ A_times_zero_n50,python,50,0.000e+00,0.000e+00,pass
 A_times_zero_n50,java,50,0.000e+00,0.000e+00,pass
 A_times_zero_n50,c,50,0.000e+00,0.000e+00,pass
 A_times_zero_n50,all_three_bitwise_identical,50,,,yes
-random_n64_vs_numpy,python,64,4.441e-15,9.095e-13,pass
-random_n64_vs_numpy,java,64,4.441e-15,9.095e-13,pass
-random_n64_vs_numpy,c,64,4.441e-15,9.095e-13,pass
+random_n64_vs_numpy,python,64,0.000e+00,9.095e-13,pass
+random_n64_vs_numpy,java,64,0.000e+00,9.095e-13,pass
+random_n64_vs_numpy,c,64,0.000e+00,9.095e-13,pass
 random_n64_vs_numpy,all_three_bitwise_identical,64,,,yes
-random_n100_vs_numpy,python,100,7.105e-15,2.220e-12,pass
-random_n100_vs_numpy,java,100,7.105e-15,2.220e-12,pass
-random_n100_vs_numpy,c,100,7.105e-15,2.220e-12,pass
+random_n100_vs_numpy,python,100,0.000e+00,2.220e-12,pass
+random_n100_vs_numpy,java,100,0.000e+00,2.220e-12,pass
+random_n100_vs_numpy,c,100,0.000e+00,2.220e-12,pass
 random_n100_vs_numpy,all_three_bitwise_identical,100,,,yes
