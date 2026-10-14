@@ -162,6 +162,5 @@ On this machine, with the same algorithm, inputs and arithmetic, the triple-loop
 
 [8] Free Software Foundation, "Options that control optimization," GCC online documentation. [Online]. Available: https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
 
-**Materials.** GitHub repository: *[link to be added]*. It contains the source code, the README with exact build and run commands, the input generator, raw measurements (`results/raw_times.csv`), correctness results, environment description and the scripts that produce all tables and figures (`scripts/analyze.py`).
+**Materials.** GitHub repository: https://github.com/andreapatruno1/Assignment1_BD. It contains the source code, the README with exact build and run commands, the input generator, raw measurements (`results/raw_times.csv`), correctness results, environment description and the scripts that produce all tables and figures (`scripts/analyze.py`).
 
-**Use of generative AI.** Claude (Anthropic) was used to help write the code, the scripts and the text of this report. The author ran the experiments; all numbers come from the raw data in the repository.

@@ -5,7 +5,7 @@ Big Data, ULPGC, 2026-2027 · Andrea Patruno
 Research question: *How does the matrix size n affect the runtime and the memory use of the same basic
 triple-loop matrix multiplication implemented in Python, Java and C, on one machine?*
 
-The report is `Assignment01_Patruno_Report.pdf`.
+The report is `Assignment01_Patruno_Report.pdf`. Repository: https://github.com/andreapatruno1/Assignment1_BD
 
 ## Contents
 
@@ -85,7 +85,3 @@ build/c/matmul bench <n> <warmup> <reps> data
   `results/limits.csv` and larger sizes are not attempted.
 - Memory metric: peak resident set size of the process (`VmHWM`), read by each program itself at the end.
 
-## Use of generative AI
-
-Claude (Anthropic) was used to help write the code, the scripts and the text of the report.
-The measurements were run on the author's machine; all numbers come from `results/`.
