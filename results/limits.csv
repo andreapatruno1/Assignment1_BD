@@ -1,0 +1,4 @@
+language,n,event,limit
+c,2048,timeout (single multiplication not finished),20 s
+java,2048,timeout (single multiplication not finished),20 s
+python,1024,timeout (single multiplication not finished),20 s
