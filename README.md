@@ -5,7 +5,7 @@ Big Data, ULPGC, 2026-2027 · Andrea Patruno
 Research question: *How does the matrix size n affect the runtime and the memory use of the same basic
 triple-loop matrix multiplication implemented in Python, Java and C, on one machine?*
 
-The report is `Assignment01_Patruno_Report.pdf`. Repository: https://github.com/andreapatruno1/Assignment1_BD
+The report (PDF) is submitted separately; its source is `report/report.md`. Repository: https://github.com/andreapatruno1/Assignment1_BD
 
 ## Benchmarking tools
 
