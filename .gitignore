@@ -1,3 +1,6 @@
 build/
 data/*.bin
 __pycache__/
+src/java/target/
+.benchmarks/
+src/java/dependency-reduced-pom.xml

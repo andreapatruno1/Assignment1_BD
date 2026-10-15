@@ -21,7 +21,7 @@ import numpy as np
 ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 IMPLS = {
     "python": ["python3", os.path.join(ROOT, "src/python/matmul.py")],
-    "java": ["java", "-cp", os.path.join(ROOT, "build/java"), "MatMul"],
+    "java": ["java", "-cp", os.path.join(ROOT, "src/java/target/benchmarks.jar"), "matmul.MatMul"],
     "c": [os.path.join(ROOT, "build/c/matmul")],
 }
 

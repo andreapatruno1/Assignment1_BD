@@ -1,0 +1,7 @@
+# started on Thu Oct 15 12:07:13 2026
+
+35620.59,msec,task-clock,35620589324,100.00,,
+<not supported>,,cycles,0,100.00,,
+<not supported>,,instructions,0,100.00,,
+<not supported>,,cache-references,0,100.00,,
+<not supported>,,cache-misses,0,100.00,,

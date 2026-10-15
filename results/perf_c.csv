@@ -1,0 +1,6 @@
+n,multiplications,task-clock,cycles,instructions,cache-references,cache-misses
+64,384,32.45,<not supported>,<not supported>,<not supported>,<not supported>
+128,48,53.26,<not supported>,<not supported>,<not supported>,<not supported>
+256,6,54.94,<not supported>,<not supported>,<not supported>,<not supported>
+512,6,1926.49,<not supported>,<not supported>,<not supported>,<not supported>
+1024,6,35620.59,<not supported>,<not supported>,<not supported>,<not supported>

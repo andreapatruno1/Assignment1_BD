@@ -2,13 +2,11 @@
 
 Storage: one flat Python list of floats per matrix, row-major (element (i, j) at i*n + j).
 
-Usage:
-  python3 matmul.py mult  A.bin B.bin n C.bin          multiply once and write C (correctness tests)
-  python3 matmul.py bench n warmup reps datadir        benchmark; prints one CSV row per measured repetition
+Benchmarked with pytest-benchmark (see test_matmul_benchmark.py). Correctness tests use:
+  python3 matmul.py mult A.bin B.bin n C.bin
 """
 import array
 import sys
-import time
 
 
 def multiply(a, b, c, n):
@@ -62,22 +60,7 @@ def main():
         multiply(a, b, c, n)
         array.array("d", c).tofile(open(sys.argv[5], "wb"))
         return
-    n, warmup, reps, data = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5]
-    a, b = load(f"{data}/A_{n}.bin", n), load(f"{data}/B_{n}.bin", n)   # outside the timed region
-    c = [0.0] * (n * n)                                                   # output allocated outside too
-    batch = batch_size(n)
-    rows = []
-    for r in range(-warmup, reps):
-        t0 = time.perf_counter_ns()
-        for _ in range(batch):
-            multiply(a, b, c, n)
-        t1 = time.perf_counter_ns()
-        if r >= 0:
-            rows.append((r, (t1 - t0) / 1e9 / batch, checksum(c)))   # consumes the result
-    rss = peak_rss_kb()
-    for r, t, chk in rows:
-        print(f"python,{n},{r},{batch},{t:.9f},{chk:.12e},{rss}")
-
+    raise SystemExit("usage: matmul.py mult A.bin B.bin n C.bin")
 
 if __name__ == "__main__":
     main()

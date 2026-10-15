@@ -2,7 +2,7 @@
  * Basic dense matrix multiplication (triple loop, i-j-k order) in C.
  * Storage: one flat double array per matrix (malloc), row-major (element (i, j) at i*n + j).
  *
- * Build: gcc -O2 -std=c11 -Wall -o matmul matmul.c
+ * Build: gcc -O2 -std=c11 -Wall -o matmul matmul.c   (benchmarked under perf stat, see scripts/run_benchmarks.py)
  * Usage:
  *   ./matmul mult  A.bin B.bin n C.bin       multiply once and write C (correctness tests)
  *   ./matmul bench n warmup reps datadir     benchmark; prints one CSV row per measured repetition

@@ -1,0 +1,6 @@
+n,task_clock_ms,IPC,cache_refs_per_madd,cache_misses_per_madd,miss_ratio_pct
+64,32.45,n/a,n/a,n/a,n/a
+128,53.26,n/a,n/a,n/a,n/a
+256,54.94,n/a,n/a,n/a,n/a
+512,1926.49,n/a,n/a,n/a,n/a
+1024,35620.59,n/a,n/a,n/a,n/a

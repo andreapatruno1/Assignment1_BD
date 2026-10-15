@@ -7,41 +7,53 @@ triple-loop matrix multiplication implemented in Python, Java and C, on one mach
 
 The report is `Assignment01_Patruno_Report.pdf`. Repository: https://github.com/andreapatruno1/Assignment1_BD
 
+## Benchmarking tools
+
+| Language | Tool | Where |
+|---|---|---|
+| Java | JMH 1.35 (Maven) | `src/java/src/main/java/matmul/MatMulBenchmark.java` |
+| Python | pytest-benchmark | `src/python/test_matmul_benchmark.py` |
+| C | `perf stat` (program compiled with `gcc -O2`) | `scripts/run_benchmarks.py` |
+
 ## Contents
 
 | Path | What it is |
 |---|---|
 | `src/python/matmul.py` | Python implementation (pure Python, flat list, i-j-k triple loop) |
-| `src/java/MatMul.java` | Java implementation (flat `double[]`, i-j-k triple loop) |
-| `src/c/matmul.c` | C implementation (flat `double*`, i-j-k triple loop) |
+| `src/python/test_matmul_benchmark.py` | pytest-benchmark test |
+| `src/java/` | Maven project: `matmul/MatMul.java` (implementation), `matmul/MatMulBenchmark.java` (JMH) |
+| `src/c/matmul.c` | C implementation (flat `double*`, i-j-k triple loop, kernel timer) |
 | `scripts/gen_inputs.py` | generates the shared input matrices `data/A_n.bin`, `data/B_n.bin` |
-| `scripts/build.sh` | compiles Java and C into `build/` |
+| `scripts/build.sh` | builds `src/java/target/benchmarks.jar` and `build/c/matmul` |
 | `scripts/verify.py` | correctness tests (known answers, identity, zero, NumPy reference) |
-| `scripts/run_benchmarks.py` | benchmark protocol (sizes, repetitions, warm-up, budgets) |
+| `scripts/run_benchmarks.py` | runs JMH, pytest-benchmark and perf with the protocol below |
 | `scripts/env_info.sh` | records the environment in `results/environment.txt` |
-| `scripts/analyze.py` | summary table and figures from the raw data |
-| `results/raw_times.csv` | every measured repetition (raw data) |
+| `scripts/analyze.py` | summary tables and figures from the raw data |
+| `results/raw_times.csv` | every measured repetition, all languages (raw data) |
+| `results/tools/` | native output of the tools (JMH json, pytest-benchmark json, perf stat) |
+| `results/perf_c.csv`, `results/perf_summary.csv` | perf hardware counters for C |
 | `results/limits.csv` | timeouts / budget failures |
 | `results/correctness.csv` | results of the correctness tests |
 | `results/summary.csv` | median, Q1, Q3, IQR, min, max, ns per iteration, memory |
 | `results/environment.txt` | CPU, RAM, OS, compiler, JVM and Python versions |
 | `results/fig/` | figures used in the report |
 
-## Requirements
-
-- Linux (the memory metric reads `VmHWM` from `/proc/self/status`)
-- GCC (tested: 15.2.0), JDK 11 or newer (`javac`, `java`; tested: OpenJDK 21.0.12)
-- Python 3.10+ (tested: CPython 3.14.4) with the packages in `requirements.txt`
-  (NumPy is used only to generate inputs and as correctness reference, never inside the timed code)
+## Requirements (Linux or WSL2, Ubuntu)
 
 ```bash
-pip install -r requirements.txt
+sudo apt install -y build-essential openjdk-21-jdk maven linux-tools-generic \
+    python3-numpy python3-matplotlib python3-pytest python3-pytest-benchmark
+sudo sysctl -w kernel.perf_event_paranoid=1      # lets perf read hardware counters (until reboot)
 ```
+
+Tested with GCC 15.2.0, OpenJDK 21.0.12, Maven, JMH 1.35, CPython 3.14.4, pytest-benchmark,
+NumPy and Matplotlib (`requirements.txt`). NumPy is used only to generate inputs and as correctness
+reference, never inside the timed code. The memory metric reads `VmHWM` from `/proc/self/status` (Linux only).
 
 ## Exact commands
 
 ```bash
-# 1. build (C: gcc -O2 -std=c11 -Wall ; Java: javac --release 11)
+# 1. build (Java: mvn package -> src/java/target/benchmarks.jar ; C: gcc -O2 -std=c11 -Wall)
 bash scripts/build.sh
 
 # 2. generate the shared inputs (float64, little-endian, row-major, seed 42 + n, uniform [-1, 1))
@@ -53,35 +65,36 @@ python3 scripts/verify.py
 # 4. environment -> results/environment.txt
 bash scripts/env_info.sh
 
-# 5. benchmarks -> results/raw_times.csv and results/limits.csv (about 5 minutes)
+# 5. benchmarks -> results/raw_times.csv, results/limits.csv, results/perf_c.csv (about 10 minutes)
 python3 scripts/run_benchmarks.py
 #    or one configuration at a time:
-python3 scripts/run_benchmarks.py --lang c --n 1024
+python3 scripts/run_benchmarks.py --lang java --n 512
 
-# 6. tables and figures -> results/summary.csv and results/fig/
+# 6. tables and figures -> results/summary.csv, results/perf_summary.csv, results/fig/
 python3 scripts/analyze.py
 ```
 
-Each implementation can also be run directly:
+Each tool can also be run directly (from the repository root):
 
 ```bash
-python3 src/python/matmul.py bench <n> <warmup> <reps> data
-java -Xmx2g -cp build/java MatMul bench <n> <warmup> <reps> data
-build/c/matmul bench <n> <warmup> <reps> data
-# output CSV: language,n,rep,batch,time_per_mult_s,checksum,peak_rss_kb
+java -jar src/java/target/benchmarks.jar MatMulBenchmark -p n=512 -p dataDir=data
+(cd src/python && MATMUL_N=256 MATMUL_DATA=../../data python3 -m pytest test_matmul_benchmark.py --benchmark-only)
+perf stat -e task-clock,cycles,instructions,cache-references,cache-misses build/c/matmul bench 512 1 5 data
 ```
 
 ## Protocol (fixed before running)
 
 - Sizes n = 64, 128, 256, 512, 1024, 2048; 5 measured repetitions per configuration.
-- Warm-up runs (not reported): Java 3, C 1, Python 1.
-- Timer: monotonic (`clock_gettime(CLOCK_MONOTONIC)`, `System.nanoTime`, `time.perf_counter_ns`) around
-  the triple loop only. Input loading and allocation of A, B and C are outside the timed region.
-- n ≤ 128: each sample times a batch of 2^24 / n^3 multiplications (64 at n = 64, 8 at n = 128) and
-  reports time per multiplication.
-- After each sample the checksum (left-to-right sum of C) is computed, so the result is consumed.
+- Timed region: the triple loop only; input loading and allocation of A, B and C are outside it.
+  - Java (JMH): `Mode.AverageTime`, 3 warm-up + 5 measurement iterations of 1 s, 1 fork (`-Xmx2g`);
+    one value per iteration = average time per multiplication. The result is returned to JMH.
+  - Python (pytest-benchmark): `benchmark.pedantic`, 1 warm-up round + 5 rounds; each round runs
+    2^24 / n^3 multiplications for n ≤ 128 (64 at n = 64, 8 at n = 128), else 1.
+  - C (perf): the program times each repetition with `clock_gettime(CLOCK_MONOTONIC)` (1 warm-up,
+    5 measured, same batching as Python) and runs under `perf stat`, which records the hardware counters.
+- After each sample the checksum (left-to-right sum of C) is computed or the result is consumed.
 - Budgets: 20 s for one multiplication, 2 GB peak resident memory. If 8 x the previous median exceeds
-  20 s, one multiplication is first attempted with a 20 s timeout; on timeout the size is recorded in
-  `results/limits.csv` and larger sizes are not attempted.
-- Memory metric: peak resident set size of the process (`VmHWM`), read by each program itself at the end.
-
+  20 s, one multiplication is first attempted with a 20 s timeout (tool start-up included); on timeout the
+  size is recorded in `results/limits.csv` and larger sizes are not attempted.
+- Memory metric: peak resident set size (`VmHWM`) of the process that runs the kernel (JMH fork JVM,
+  pytest process, C program), read at the end of the run.

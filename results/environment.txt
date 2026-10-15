@@ -1,4 +1,4 @@
-date: 2026-10-14T19:59:06Z
+date: 2026-10-15T11:07:09Z
 == CPU ==
 CPU(s):                               12
 Model name:                           12th Gen Intel(R) Core(TM) i7-1255U
@@ -10,7 +10,7 @@ L2 cache:                             7.5 MiB (6 instances)
 L3 cache:                             12 MiB (1 instance)
 == memory ==
                total        used        free      shared  buff/cache   available
-Mem:           10953         519       10048           3         549       10433
+Mem:           10953         540        9816           3         767       10412
 == OS ==
 PRETTY_NAME="Ubuntu 26.04.1 LTS"
 6.6.87.2-microsoft-standard-WSL2
@@ -21,7 +21,12 @@ flags: -O2 -std=c11 -Wall
 openjdk version "21.0.12.1" 2026-08-18
 OpenJDK Runtime Environment (build 21.0.12.1+1-1-26.04.4-Ubuntu)
 OpenJDK 64-Bit Server VM (build 21.0.12.1+1-1-26.04.4-Ubuntu, mixed mode, sharing)
-runtime flags: -Xmx2g (default JIT and GC)
+[1mApache Maven 3.9.12[m
+JMH 1.35, fork JVM flags: -Xmx2g (default JIT and GC)
 == Python ==
 Python 3.14.4
 CPython numpy 2.3.5 matplotlib 3.10.7+dfsg1
+pytest 9.0.2 pytest-benchmark 5.2.3
+== perf ==
+perf version 7.0.14
+perf_event_paranoid: 1

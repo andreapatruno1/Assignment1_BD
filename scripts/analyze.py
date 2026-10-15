@@ -5,7 +5,7 @@ Outputs:
                              time per inner iteration (median / n^3), peak RSS, array-storage estimate
   results/fig/time.png       median time vs n (log-log), IQR as error bars, n^3 reference line
   results/fig/per_iter.png   median time / n^3 (ns per inner-loop iteration)
-  results/fig/memory.png     peak resident memory vs n
+  results/perf_summary.csv   C hardware counters from perf stat, per multiply-add (n^3 per multiplication)
 Quartiles: statistics.quantiles(..., n=4, method="inclusive") over the 5 measured repetitions.
 """
 import csv
@@ -72,14 +72,27 @@ def main():
     plt.xlabel("matrix size n"); plt.ylabel("median time / n³ (ns)")
     plt.legend(); plt.grid(alpha=.3); plt.tight_layout(); plt.savefig(os.path.join(FIG, "per_iter.png"), dpi=150); plt.close()
 
-    # memory
-    plt.figure(figsize=(6.2, 3.6))
-    for lang, label in LANGS:
-        ns, v, _ = series(lang, "peak_rss_MB")
-        plt.plot(ns, v, marker="o", label=f"{label} (peak RSS)")
-    plt.xscale("log", base=2); plt.yscale("log")
-    plt.xlabel("matrix size n"); plt.ylabel("peak resident memory (MiB)")
-    plt.legend(); plt.grid(alpha=.3); plt.tight_layout(); plt.savefig(os.path.join(FIG, "memory.png"), dpi=150); plt.close()
+    # perf counters (C)
+    perf_path = os.path.join(RES, "perf_c.csv")
+    if os.path.exists(perf_path):
+        def num(x):
+            try:
+                return float(x)
+            except ValueError:
+                return None
+        out = []
+        for r in csv.DictReader(open(perf_path)):
+            n, madds = int(r["n"]), int(r["multiplications"]) * int(r["n"]) ** 3
+            cyc, ins, ref, miss = (num(r[k]) for k in ("cycles", "instructions", "cache-references", "cache-misses"))
+            out.append({"n": n, "task_clock_ms": r["task-clock"],
+                        "IPC": f"{ins / cyc:.2f}" if ins and cyc else "n/a",
+                        "cache_refs_per_madd": f"{ref / madds:.4f}" if ref else "n/a",
+                        "cache_misses_per_madd": f"{miss / madds:.4f}" if miss is not None else "n/a",
+                        "miss_ratio_pct": f"{100 * miss / ref:.1f}" if miss is not None and ref else "n/a"})
+        with open(os.path.join(RES, "perf_summary.csv"), "w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=list(out[0]))
+            w.writeheader(); w.writerows(out)
+        print(open(os.path.join(RES, "perf_summary.csv")).read())
     print(open(os.path.join(RES, "summary.csv")).read())
 
 

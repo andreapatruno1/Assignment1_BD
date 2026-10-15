@@ -1,0 +1,61 @@
+[
+    {
+        "jmhVersion" : "1.35",
+        "benchmark" : "matmul.MatMulBenchmark.multiply",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 1,
+        "jvm" : "/usr/lib/jvm/java-21-openjdk-amd64/bin/java",
+        "jvmArgs" : [
+            "-Xmx2g",
+            "-Dmatmul.info=jmh_info_256.csv"
+        ],
+        "jdkVersion" : "21.0.12.1",
+        "vmName" : "OpenJDK 64-Bit Server VM",
+        "vmVersion" : "21.0.12.1+1-1-26.04.4-Ubuntu",
+        "warmupIterations" : 3,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 5,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "dataDir" : "../../data",
+            "n" : "256"
+        },
+        "primaryMetric" : {
+            "score" : 0.011515319201724137,
+            "scoreError" : 3.7502566932736114E-4,
+            "scoreConfidence" : [
+                0.011140293532396775,
+                0.011890344871051499
+            ],
+            "scorePercentiles" : {
+                "0.0" : 0.011407633852272727,
+                "50.0" : 0.011499886772727272,
+                "90.0" : 0.011639137126436782,
+                "95.0" : 0.011639137126436782,
+                "99.0" : 0.011639137126436782,
+                "99.9" : 0.011639137126436782,
+                "99.99" : 0.011639137126436782,
+                "99.999" : 0.011639137126436782,
+                "99.9999" : 0.011639137126436782,
+                "100.0" : 0.011639137126436782
+            },
+            "scoreUnit" : "s/op",
+            "rawData" : [
+                [
+                    0.011499886772727272,
+                    0.011588372632183907,
+                    0.011639137126436782,
+                    0.011441565625,
+                    0.011407633852272727
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    }
+]
+
+
