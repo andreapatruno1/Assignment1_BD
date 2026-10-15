@@ -98,3 +98,7 @@ perf stat -e task-clock,cycles,instructions,cache-references,cache-misses build/
   size is recorded in `results/limits.csv` and larger sizes are not attempted.
 - Memory metric: peak resident set size (`VmHWM`) of the process that runs the kernel (JMH fork JVM,
   pytest process, C program), read at the end of the run.
+
+## Use of generative AI
+
+Generative AI was used to help write the code and check its correctness, and to write the report and translate it into English. The author ran all the experiments.

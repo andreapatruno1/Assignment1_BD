@@ -162,3 +162,4 @@ On this machine, with the same algorithm, inputs and arithmetic, the triple-loop
 
 **Materials.** GitHub repository: https://github.com/andreapatruno1/Assignment1_BD. It contains the source code, the README with exact build and run commands, the input generator, raw measurements (`results/raw_times.csv` and the native tool output in `results/tools/`), correctness results, environment description and the scripts that produce all tables and figures (`scripts/analyze.py`).
 
+**Use of generative AI.** Generative AI was used to help write the code and check its correctness, and to write the report and translate it into English. The author ran all the experiments.
